@@ -72,6 +72,11 @@ variable "enable_container_insights" {
   default = true
 }
 
+variable "root_block_device" {
+  type    = list(any)
+  default = []
+}
+
 variable "tags" {
   type    = map(string)
   default = {}
