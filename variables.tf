@@ -73,14 +73,7 @@ variable "enable_container_insights" {
 }
 
 variable "root_block_device" {
-  type    = list(object({
-    volume_type = string
-    volume_size = number
-    iops = number
-    throughput = number
-    delete_on_termination = bool
-    encrypted = bool
-  }))
+  type    = list(any)
   default = []
 }
 
