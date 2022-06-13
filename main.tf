@@ -57,6 +57,18 @@ echo 'ECS_CLUSTER=${var.name}' >> /etc/ecs/ecs.config
 echo 'ECS_DISABLE_PRIVILEGED=true' >> /etc/ecs/ecs.config
 EOF
 
+  dynamic "root_block_device" {
+    for_each = var.root_block_device
+    content {
+      volume_type           = lookup(root_block_device.value, "volume_type", null)
+      volume_size           = lookup(root_block_device.value, "volume_size", null)
+      iops                  = lookup(root_block_device.value, "iops", null)
+      throughput            = lookup(root_block_device.value, "throughput", null)
+      delete_on_termination = lookup(root_block_device.value, "delete_on_termination", null)
+      encrypted             = lookup(root_block_device.value, "encrypted", null)
+    }
+  }
+
   lifecycle {
     create_before_destroy = true
   }

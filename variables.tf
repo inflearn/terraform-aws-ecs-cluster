@@ -72,6 +72,18 @@ variable "enable_container_insights" {
   default = true
 }
 
+variable "root_block_device" {
+  type    = list(object({
+    volume_type = string
+    volume_size = number
+    iops = number
+    throughput = number
+    delete_on_termination = bool
+    encrypted = bool
+  }))
+  default = []
+}
+
 variable "tags" {
   type    = map(string)
   default = {}
