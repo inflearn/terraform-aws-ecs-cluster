@@ -42,6 +42,16 @@ variable "max_size" {
   default = 1
 }
 
+variable "protect_from_scale_in" {
+  type    = bool
+  default = false
+}
+
+variable "managed_termination_protection" {
+  type    = string
+  default = "DISABLED"
+}
+
 variable "target_capacity" {
   type    = number
   default = 90

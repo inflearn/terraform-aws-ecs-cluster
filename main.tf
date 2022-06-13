@@ -75,12 +75,13 @@ EOF
 }
 
 resource "aws_autoscaling_group" "this" {
-  count                = var.type == "EC2" ? 1 : 0
-  name                 = var.name
-  vpc_zone_identifier  = var.subnets
-  min_size             = var.min_size
-  max_size             = var.max_size
-  launch_configuration = aws_launch_configuration.this[0].name
+  count                 = var.type == "EC2" ? 1 : 0
+  name                  = var.name
+  vpc_zone_identifier   = var.subnets
+  min_size              = var.min_size
+  max_size              = var.max_size
+  launch_configuration  = aws_launch_configuration.this[0].name
+  protect_from_scale_in = var.protect_from_scale_in
 
   lifecycle {
     ignore_changes        = [desired_capacity]
@@ -105,7 +106,8 @@ resource "aws_ecs_capacity_provider" "this" {
   tags       = var.tags
 
   auto_scaling_group_provider {
-    auto_scaling_group_arn = aws_autoscaling_group.this[0].arn
+    auto_scaling_group_arn         = aws_autoscaling_group.this[0].arn
+    managed_termination_protection = var.managed_termination_protection
 
     managed_scaling {
       status          = "ENABLED"
