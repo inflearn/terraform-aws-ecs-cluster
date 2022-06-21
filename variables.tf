@@ -2,11 +2,6 @@ variable "name" {
   type = string
 }
 
-variable "type" {
-  type    = string
-  default = "EC2"
-}
-
 variable "subnets" {
   type    = list(string)
   default = null
@@ -18,8 +13,7 @@ variable "security_groups" {
 }
 
 variable "public_key" {
-  type    = string
-  default = null
+  type = string
 }
 
 variable "ami" {
@@ -34,7 +28,7 @@ variable "instance_type" {
 
 variable "min_size" {
   type    = number
-  default = 1
+  default = 0
 }
 
 variable "max_size" {
@@ -57,6 +51,11 @@ variable "target_capacity" {
   default = 90
 }
 
+variable "capacity_provider" {
+  type    = string
+  default = "FARGATE"
+}
+
 variable "capacity_provider_base" {
   type    = number
   default = 1
@@ -65,11 +64,6 @@ variable "capacity_provider_base" {
 variable "capacity_provider_weight" {
   type    = number
   default = 1
-}
-
-variable "capacity_provider" {
-  type    = string
-  default = "FARGATE"
 }
 
 variable "associate_public_ip_address" {
