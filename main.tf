@@ -1,6 +1,4 @@
 data "aws_iam_policy_document" "this" {
-  count = var.type == "EC2" ? 1 : 0
-
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -12,44 +10,38 @@ data "aws_iam_policy_document" "this" {
 }
 
 resource "aws_iam_role" "instance" {
-  count              = var.type == "EC2" ? 1 : 0
   name               = "${var.name}-ecs-instance"
-  assume_role_policy = data.aws_iam_policy_document.this[0].json
+  assume_role_policy = data.aws_iam_policy_document.this.json
   tags               = var.tags
 }
 
 data "aws_iam_policy" "instance" {
-  count = var.type == "EC2" ? 1 : 0
-  name  = "AmazonEC2ContainerServiceforEC2Role"
+  name = "AmazonEC2ContainerServiceforEC2Role"
 }
 
 resource "aws_iam_role_policy_attachment" "instance" {
-  count      = var.type == "EC2" ? 1 : 0
-  role       = aws_iam_role.instance[0].name
-  policy_arn = data.aws_iam_policy.instance[0].arn
+  role       = aws_iam_role.instance.name
+  policy_arn = data.aws_iam_policy.instance.arn
 }
 
 resource "aws_iam_instance_profile" "instance" {
-  count = var.type == "EC2" ? 1 : 0
-  name  = "${var.name}-ecs-instance"
-  role  = aws_iam_role.instance[0].name
+  name = "${var.name}-ecs-instance"
+  role = aws_iam_role.instance.name
 }
 
 resource "aws_key_pair" "this" {
-  count      = var.type == "EC2" ? 1 : 0
   key_name   = var.name
   public_key = var.public_key
 }
 
 resource "aws_launch_configuration" "this" {
-  count                       = var.type == "EC2" ? 1 : 0
   name_prefix                 = "${var.name}-"
   security_groups             = var.security_groups
   image_id                    = var.ami
   instance_type               = var.instance_type
   associate_public_ip_address = var.associate_public_ip_address
-  iam_instance_profile        = aws_iam_instance_profile.instance[0].name
-  key_name                    = aws_key_pair.this[0].key_name
+  iam_instance_profile        = aws_iam_instance_profile.instance.name
+  key_name                    = aws_key_pair.this.key_name
 
   user_data = <<EOF
 #!/bin/bash
@@ -75,12 +67,11 @@ EOF
 }
 
 resource "aws_autoscaling_group" "this" {
-  count                 = var.type == "EC2" ? 1 : 0
   name                  = var.name
   vpc_zone_identifier   = var.subnets
   min_size              = var.min_size
   max_size              = var.max_size
-  launch_configuration  = aws_launch_configuration.this[0].name
+  launch_configuration  = aws_launch_configuration.this.name
   protect_from_scale_in = var.protect_from_scale_in
 
   lifecycle {
@@ -100,13 +91,12 @@ resource "aws_autoscaling_group" "this" {
 }
 
 resource "aws_ecs_capacity_provider" "this" {
-  depends_on = [aws_autoscaling_group.this[0]]
-  count      = var.type == "EC2" ? 1 : 0
+  depends_on = [aws_autoscaling_group.this]
   name       = var.name
   tags       = var.tags
 
   auto_scaling_group_provider {
-    auto_scaling_group_arn         = aws_autoscaling_group.this[0].arn
+    auto_scaling_group_arn         = aws_autoscaling_group.this.arn
     managed_termination_protection = var.managed_termination_protection
 
     managed_scaling {
@@ -128,15 +118,11 @@ resource "aws_ecs_cluster" "this" {
 
 resource "aws_ecs_cluster_capacity_providers" "this" {
   cluster_name       = aws_ecs_cluster.this.name
-  capacity_providers = var.type == "EC2" ? [aws_ecs_capacity_provider.this[0].name] : [var.type]
+  capacity_providers = ["FARGATE", aws_ecs_capacity_provider.this.name]
 
-  dynamic "default_capacity_provider_strategy" {
-    for_each = var.type == "EC2" ? [] : [1]
-
-    content {
-      base              = var.capacity_provider_base
-      weight            = var.capacity_provider_weight
-      capacity_provider = var.capacity_provider
-    }
+  default_capacity_provider_strategy {
+    capacity_provider = var.capacity_provider
+    base              = var.capacity_provider_base
+    weight            = var.capacity_provider_weight
   }
 }
