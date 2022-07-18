@@ -41,6 +41,11 @@ variable "protect_from_scale_in" {
   default = false
 }
 
+variable "enabled_metrics" {
+  type    = list(string)
+  default = null
+}
+
 variable "managed_termination_protection" {
   type    = string
   default = "DISABLED"

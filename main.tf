@@ -73,6 +73,7 @@ resource "aws_autoscaling_group" "this" {
   max_size              = var.max_size
   launch_configuration  = aws_launch_configuration.this.name
   protect_from_scale_in = var.protect_from_scale_in
+  enabled_metrics       = var.enabled_metrics
 
   lifecycle {
     ignore_changes        = [desired_capacity]
